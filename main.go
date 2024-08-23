@@ -126,6 +126,9 @@ func newtonRaphson(f, df func(float64) (float64, error), x0, xtol float64, maxIt
 }
 
 func goalSeek(targetProfit float64, params FinancialParams, initialGuess float64) (float64, int, error) {
+	if initialGuess == 0 || targetProfit == 0 {
+		return 0, 0, fmt.Errorf("initialRate and targetProfit must not be zero")
+	}
 	objective := func(rate float64) (float64, error) {
 		profit, err := calculateFinancials(rate, params)
 		if err != nil {

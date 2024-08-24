@@ -1,0 +1,13 @@
+{
+  "numYears": 10,
+  "auHours": 450,
+  "initialTSN": 100,
+  "rateEscalation": 5,
+  "aic": 10,
+  "hsitsn": 1000,
+  "overhaulTSN": 3000,
+  "hsiCost": 50000,
+  "overhaulCost": 100000,
+  "targetProfit": 2000000,
+  "initialRate": 320
+}

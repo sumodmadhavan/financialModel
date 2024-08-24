@@ -1,0 +1,42 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+APIEndpoint	main.go	/^type APIEndpoint struct {$/;"	t
+APIServer	main.go	/^type APIServer struct {$/;"	t
+AddEndpoint	main.go	/^func (s *APIServer) AddEndpoint(endpoint APIEndpoint) {$/;"	f
+EndpointHandler	main.go	/^type EndpointHandler = gin.HandlerFunc$/;"	t
+FinancialParams	..main_new.go	/^type FinancialParams struct {$/;"	t
+FinancialParams	..main_optimze_strategy.go	/^type FinancialParams struct {$/;"	t
+FinancialParams	financials.go	/^type FinancialParams struct {$/;"	t
+GoalSeekHandler	goalseek.go	/^func GoalSeekHandler(c *gin.Context) {$/;"	f
+NewAPIServer	main.go	/^func NewAPIServer() *APIServer {$/;"	f
+Run	main.go	/^func (s *APIServer) Run(addr string) error {$/;"	f
+RunoutHandler	runout.go	/^func RunoutHandler(c *gin.Context) {$/;"	f
+SetupRoutes	main.go	/^func (s *APIServer) SetupRoutes() {$/;"	f
+TestCalculateFinancialsOptimalRateOnly	main_test_copy.go	/^func TestCalculateFinancialsOptimalRateOnly(t *testing.T) {$/;"	f
+TestGoalSeekEndpoint	main_test.go	/^func TestGoalSeekEndpoint(t *testing.T) {$/;"	f
+Validate	financials.go	/^func (p FinancialParams) Validate() error {$/;"	f
+calculateFinancials	..main_new.go	/^func calculateFinancials(rate float64, params FinancialParams) float64 {$/;"	f
+calculateFinancials	..main_optimze_strategy.go	/^func calculateFinancials(rate float64, params FinancialParams) float64 {$/;"	f
+calculateFinancials	financials.go	/^func calculateFinancials(rate float64, params FinancialParams) (float64, error) {$/;"	f
+goalSeek	..main_new.go	/^func goalSeek(targetProfit float64, params FinancialParams, tolerance float64) (float64, int, error) {$/;"	f
+goalSeek	..main_optimze_strategy.go	/^func goalSeek(targetProfit float64, params FinancialParams, tolerance float64) (float64, int, error) {$/;"	f
+goalSeek	financials.go	/^func goalSeek(targetProfit float64, params FinancialParams, initialGuess float64) (float64, int, error) {$/;"	f
+main	..main_new.go	/^func main() {$/;"	f
+main	..main_new.go	/^package main$/;"	p
+main	..main_optimze_strategy.go	/^func main() {$/;"	f
+main	..main_optimze_strategy.go	/^package main$/;"	p
+main	financials.go	/^package main$/;"	p
+main	goalseek.go	/^package main$/;"	p
+main	main.go	/^func main() {$/;"	f
+main	main.go	/^package main$/;"	p
+main	main_test.go	/^package main$/;"	p
+main	main_test_copy.go	/^package main$/;"	p
+main	runout.go	/^package main$/;"	p
+newtonRaphson	financials.go	/^func newtonRaphson(f, df func(float64) (float64, error), x0, xtol float64, maxIter int) (float64, int, error) {$/;"	f
+onChange	coverage.html	/^		function onChange() {$/;"	f
+select	coverage.html	/^		function select(part) {$/;"	f
+setupRouter	main_test.go	/^func setupRouter() *gin.Engine {$/;"	f

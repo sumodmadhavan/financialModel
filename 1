@@ -1,0 +1,147 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestCalculateEndpoint(t *testing.T) {
+	router := gin.Default()
+	router.POST("/calculate", func(c *gin.Context) {
+		var params FinancialParams
+		if err := c.ShouldBindJSON(&params); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if params.TargetProfit <= 0 || params.InitialRate <= 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "TargetProfit and InitialRate must be positive"})
+			return
+		}
+
+		optimalRate, iterations, err := goalSeek(params.TargetProfit, params, params.InitialRate)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		finalCumulativeProfit, err := calculateFinancials(optimalRate, params)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"optimalWarrantyRate":   optimalRate,
+			"iterations":            iterations,
+			"finalCumulativeProfit": finalCumulativeProfit,
+		})
+	})
+
+	tests := []struct {
+		name           string
+		payload        FinancialParams
+		expectedStatus int
+		expectedBody   map[string]interface{}
+	}{
+		{
+			name: "Valid input - original case",
+			payload: FinancialParams{
+				NumYears:       10,
+				AuHours:        450,
+				InitialTSN:     100,
+				RateEscalation: 5,
+				AIC:            10,
+				HSITSN:         1000,
+				OverhaulTSN:    3000,
+				HSICost:        50000,
+				OverhaulCost:   100000,
+				TargetProfit:   3000000,
+				InitialRate:    320,
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody: map[string]interface{}{
+				"optimalWarrantyRate":   505.93820432563325,
+				"finalCumulativeProfit": 3000000.0,
+			},
+		},
+		{
+			name: "Valid input - different target profit",
+			payload: FinancialParams{
+				NumYears:       10,
+				AuHours:        450,
+				InitialTSN:     100,
+				RateEscalation: 5,
+				AIC:            10,
+				HSITSN:         1000,
+				OverhaulTSN:    3000,
+				HSICost:        50000,
+				OverhaulCost:   100000,
+				TargetProfit:   2000000,
+				InitialRate:    320,
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody: map[string]interface{}{
+				"optimalWarrantyRate":   368.2938368932687,
+				"finalCumulativeProfit": 2000000.0,
+			},
+		},
+		{
+			name: "Invalid input - zero TargetProfit",
+			payload: FinancialParams{
+				TargetProfit: 0,
+				InitialRate:  320,
+			},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody: map[string]interface{}{
+				"error": "TargetProfit and InitialRate must be positive",
+			},
+		},
+		{
+			name: "Invalid input - zero InitialRate",
+			payload: FinancialParams{
+				TargetProfit: 3000000,
+				InitialRate:  0,
+			},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody: map[string]interface{}{
+				"error": "TargetProfit and InitialRate must be positive",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jsonPayload, _ := json.Marshal(tt.payload)
+			req, _ := http.NewRequest("POST", "/calculate", bytes.NewBuffer(jsonPayload))
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, tt.expectedStatus, w.Code)
+
+			if tt.expectedStatus == http.StatusOK {
+				var response map[string]interface{}
+				err := json.Unmarshal(w.Body.Bytes(), &response)
+				assert.NoError(t, err)
+
+				assert.InDelta(t, tt.expectedBody["optimalWarrantyRate"], response["optimalWarrantyRate"], 1e-6)
+				assert.InDelta(t, tt.expectedBody["finalCumulativeProfit"], response["finalCumulativeProfit"], 1e-6)
+
+				// Check if the finalCumulativeProfit matches the TargetProfit
+				assert.InDelta(t, tt.payload.TargetProfit, response["finalCumulativeProfit"], 1e-6)
+			} else {
+				var errorResponse map[string]string
+				err := json.Unmarshal(w.Body.Bytes(), &errorResponse)
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedBody["error"], errorResponse["error"])
+			}
+		})
+	}
+}

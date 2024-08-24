@@ -1,0 +1,377 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>financialapi: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">financialapi/main.go (42.6%)</option>
+				
+				<option value="file1">financialapi/main_test_copy.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "fmt"
+        "math"
+        "net/http"
+        "time"
+
+        "github.com/gin-gonic/gin"
+)
+
+type FinancialParams struct {
+        NumYears       int     `json:"numYears"`
+        AuHours        float64 `json:"auHours"`
+        InitialTSN     float64 `json:"initialTSN"`
+        RateEscalation float64 `json:"rateEscalation"`
+        AIC            float64 `json:"aic"`
+        HSITSN         float64 `json:"hsitsn"`
+        OverhaulTSN    float64 `json:"overhaulTSN"`
+        HSICost        float64 `json:"hsiCost"`
+        OverhaulCost   float64 `json:"overhaulCost"`
+        TargetProfit   float64 `json:"targetProfit"`
+        InitialRate    float64 `json:"initialRate"`
+}
+
+func (p FinancialParams) Validate() error <span class="cov0" title="0">{
+        if p.NumYears &lt;= 0 </span><span class="cov0" title="0">{
+                return fmt.Errorf("NumYears must be positive")
+        }</span>
+        <span class="cov0" title="0">if p.AuHours &lt;= 0 </span><span class="cov0" title="0">{
+                return fmt.Errorf("AuHours must be positive")
+        }</span>
+        <span class="cov0" title="0">if p.InitialTSN &lt; 0 </span><span class="cov0" title="0">{
+                return fmt.Errorf("InitialTSN cannot be negative")
+        }</span>
+        <span class="cov0" title="0">if p.RateEscalation &lt; 0 </span><span class="cov0" title="0">{
+                return fmt.Errorf("RateEscalation cannot be negative")
+        }</span>
+        <span class="cov0" title="0">if p.AIC &lt; 0 || p.AIC &gt; 100 </span><span class="cov0" title="0">{
+                return fmt.Errorf("AIC must be between 0 and 100")
+        }</span>
+        <span class="cov0" title="0">if p.HSITSN &lt;= 0 </span><span class="cov0" title="0">{
+                return fmt.Errorf("HSITSN must be positive")
+        }</span>
+        <span class="cov0" title="0">if p.OverhaulTSN &lt;= 0 </span><span class="cov0" title="0">{
+                return fmt.Errorf("OverhaulTSN must be positive")
+        }</span>
+        <span class="cov0" title="0">if p.HSICost &lt; 0 </span><span class="cov0" title="0">{
+                return fmt.Errorf("HSICost cannot be negative")
+        }</span>
+        <span class="cov0" title="0">if p.OverhaulCost &lt; 0 </span><span class="cov0" title="0">{
+                return fmt.Errorf("OverhaulCost cannot be negative")
+        }</span>
+        <span class="cov0" title="0">if p.TargetProfit &lt;= 0 </span><span class="cov0" title="0">{
+                return fmt.Errorf("TargetProfit must be positive")
+        }</span>
+        <span class="cov0" title="0">if p.InitialRate &lt;= 0 </span><span class="cov0" title="0">{
+                return fmt.Errorf("InitialRate must be positive")
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+
+func calculateFinancials(rate float64, params FinancialParams) (float64, error) <span class="cov8" title="1">{
+        var cumulativeProfit float64
+
+        for year := 1; year &lt;= params.NumYears; year++ </span><span class="cov8" title="1">{
+                tsn := params.InitialTSN + params.AuHours*float64(year)
+                escalatedRate := rate * math.Pow(1+params.RateEscalation/100, float64(year-1))
+
+                if math.IsInf(escalatedRate, 0) || math.IsNaN(escalatedRate) </span><span class="cov0" title="0">{
+                        return 0, fmt.Errorf("escalated rate calculation overflow or NaN")
+                }</span>
+
+                <span class="cov8" title="1">engineRevenue := params.AuHours * escalatedRate
+                aicRevenue := engineRevenue * params.AIC / 100
+                totalRevenue := engineRevenue + aicRevenue
+
+                if math.IsInf(totalRevenue, 0) || math.IsNaN(totalRevenue) </span><span class="cov0" title="0">{
+                        return 0, fmt.Errorf("revenue calculation overflow or NaN")
+                }</span>
+
+                <span class="cov8" title="1">hsi := tsn &gt;= params.HSITSN &amp;&amp; (year == 1 || tsn-params.AuHours &lt; params.HSITSN)
+                overhaul := tsn &gt;= params.OverhaulTSN &amp;&amp; (year == 1 || tsn-params.AuHours &lt; params.OverhaulTSN)
+
+                hsiCost := 0.0
+                if hsi </span><span class="cov8" title="1">{
+                        hsiCost = params.HSICost
+                }</span>
+                <span class="cov8" title="1">overhaulCost := 0.0
+                if overhaul </span><span class="cov8" title="1">{
+                        overhaulCost = params.OverhaulCost
+                }</span>
+                <span class="cov8" title="1">totalCost := hsiCost + overhaulCost
+                totalProfit := totalRevenue - totalCost
+                cumulativeProfit += totalProfit
+
+                if math.IsInf(cumulativeProfit, 0) || math.IsNaN(cumulativeProfit) </span><span class="cov0" title="0">{
+                        return 0, fmt.Errorf("cumulative profit calculation overflow or NaN")
+                }</span>
+        }
+
+        <span class="cov8" title="1">return cumulativeProfit, nil</span>
+}
+
+func newtonRaphson(f, df func(float64) (float64, error), x0, xtol float64, maxIter int) (float64, int, error) <span class="cov8" title="1">{
+        for i := 0; i &lt; maxIter; i++ </span><span class="cov8" title="1">{
+                fx, err := f(x0)
+                if err != nil </span><span class="cov0" title="0">{
+                        return 0, i, err
+                }</span>
+                <span class="cov8" title="1">if math.Abs(fx) &lt; xtol </span><span class="cov8" title="1">{
+                        return x0, i + 1, nil // Return the iteration count
+                }</span>
+
+                <span class="cov8" title="1">dfx, err := df(x0)
+                if err != nil </span><span class="cov0" title="0">{
+                        return 0, i, err
+                }</span>
+                <span class="cov8" title="1">if dfx == 0 </span><span class="cov0" title="0">{
+                        return 0, i, fmt.Errorf("derivative is zero, can't proceed with Newton-Raphson")
+                }</span>
+
+                <span class="cov8" title="1">x0 = x0 - fx/dfx</span>
+        }
+        <span class="cov0" title="0">return 0, maxIter, fmt.Errorf("Newton-Raphson method did not converge within %d iterations", maxIter)</span>
+}
+
+func goalSeek(targetProfit float64, params FinancialParams, initialGuess float64) (float64, int, error) <span class="cov8" title="1">{
+        if initialGuess == 0 || targetProfit == 0 </span><span class="cov0" title="0">{
+                return 0, 0, fmt.Errorf("initialRate and targetProfit must not be zero")
+        }</span>
+        <span class="cov8" title="1">objective := func(rate float64) (float64, error) </span><span class="cov8" title="1">{
+                profit, err := calculateFinancials(rate, params)
+                if err != nil </span><span class="cov0" title="0">{
+                        return 0, err
+                }</span>
+                <span class="cov8" title="1">return profit - targetProfit, nil</span>
+        }
+
+        <span class="cov8" title="1">derivative := func(rate float64) (float64, error) </span><span class="cov8" title="1">{
+                epsilon := 1e-6 // small value for numerical derivative approximation
+                f1, err1 := objective(rate + epsilon)
+                f2, err2 := objective(rate)
+                if err1 != nil || err2 != nil </span><span class="cov0" title="0">{
+                        return 0, fmt.Errorf("error calculating derivative")
+                }</span>
+                <span class="cov8" title="1">return (f1 - f2) / epsilon, nil</span>
+        }
+
+        <span class="cov8" title="1">return newtonRaphson(objective, derivative, initialGuess, 1e-8, 100)</span>
+}
+
+func main() <span class="cov0" title="0">{
+        r := gin.Default()
+
+        r.POST("/calculate", func(c *gin.Context) </span><span class="cov0" title="0">{
+                startTime := time.Now()
+
+                var params FinancialParams
+                if err := c.ShouldBindJSON(&amp;params); err != nil </span><span class="cov0" title="0">{
+                        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+                        return
+                }</span>
+
+                <span class="cov0" title="0">if err := params.Validate(); err != nil </span><span class="cov0" title="0">{
+                        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+                        return
+                }</span>
+
+                <span class="cov0" title="0">initialCumulativeProfit, err := calculateFinancials(params.InitialRate, params)
+                if err != nil </span><span class="cov0" title="0">{
+                        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                        return
+                }</span>
+
+                <span class="cov0" title="0">optimalRate, iterations, err := goalSeek(params.TargetProfit, params, params.InitialRate)
+                if err != nil </span><span class="cov0" title="0">{
+                        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                        return
+                }</span>
+
+                <span class="cov0" title="0">finalCumulativeProfit, err := calculateFinancials(optimalRate, params)
+                if err != nil </span><span class="cov0" title="0">{
+                        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                        return
+                }</span>
+
+                <span class="cov0" title="0">duration := time.Since(startTime)
+
+                c.JSON(http.StatusOK, gin.H{
+                        "initialWarrantyRate":     params.InitialRate,
+                        "initialCumulativeProfit": initialCumulativeProfit,
+                        "optimalWarrantyRate":     optimalRate,
+                        "iterations":              iterations,
+                        "finalCumulativeProfit":   finalCumulativeProfit,
+                        "computationTime":         duration.Seconds(),
+                })</span>
+        })
+
+        <span class="cov0" title="0">r.Run(":8080")</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package main
+
+import (
+        "math"
+        "testing"
+)
+
+func TestCalculateFinancialsOptimalRateOnly(t *testing.T) <span class="cov0" title="0">{
+        tests := []struct {
+                name         string
+                numYears     int
+                initialRate  float64
+                targetProfit float64
+                wantRate     float64
+                wantErr      bool
+        }{
+                {
+                        name:         "20 years, rate 250, target profit 2,000,000",
+                        numYears:     20,
+                        initialRate:  250,
+                        targetProfit: 2000000,
+                        wantRate:     131.35669183835628,
+                        wantErr:      false,
+                },
+                {
+                        name:         "35 years, rate 320, target profit 3,000,000",
+                        numYears:     35,
+                        initialRate:  320,
+                        targetProfit: 3000000,
+                        wantRate:     70.45631874177171,
+                        wantErr:      false,
+                },
+                {
+                        name:         "Validation error when initialRate and targetProfit are zero",
+                        numYears:     20,
+                        initialRate:  0,
+                        targetProfit: 0,
+                        wantRate:     0, // No need to check the rate as we expect an error
+                        wantErr:      true,
+                },
+        }
+
+        for _, tt := range tests </span><span class="cov0" title="0">{
+                t.Run(tt.name, func(t *testing.T) </span><span class="cov0" title="0">{
+                        params := FinancialParams{
+                                NumYears:       tt.numYears,
+                                AuHours:        450,    // Hardcoded
+                                InitialTSN:     100,    // Hardcoded
+                                RateEscalation: 5,      // Hardcoded
+                                AIC:            10,     // Hardcoded
+                                HSITSN:         1000,   // Hardcoded
+                                OverhaulTSN:    3000,   // Hardcoded
+                                HSICost:        50000,  // Hardcoded
+                                OverhaulCost:   100000, // Hardcoded
+                                TargetProfit:   tt.targetProfit,
+                                InitialRate:    tt.initialRate,
+                        }
+
+                        gotOptimalRate, _, err := goalSeek(params.TargetProfit, params, params.InitialRate)
+                        if (err != nil) != tt.wantErr </span><span class="cov0" title="0">{
+                                t.Errorf("goalSeek() error = %v, wantErr %v", err, tt.wantErr)
+                                return
+                        }</span>
+                        <span class="cov0" title="0">if !tt.wantErr &amp;&amp; math.Abs(gotOptimalRate-tt.wantRate) &gt; 1e-6 </span><span class="cov0" title="0">{
+                                t.Errorf("goalSeek() optimalRate = %v, want %v", gotOptimalRate, tt.wantRate)
+                        }</span>
+                })
+        }
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
